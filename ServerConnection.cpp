@@ -4,7 +4,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 
-ServerConnection::ServerConnection(const std::string& ip, uint64_t port)
+ServerConnection::ServerConnection(const std::string& ip, uint16_t port)
     : ip(ip), port(port) {
     sock = socket(AF_INET, SOCK_STREAM, 0);
 }
