@@ -8,14 +8,14 @@
 
 class ServerConnection {
 public:
-    ServerConnection(const std::string& ip, uint64_t port);
+    ServerConnection(const std::string& ip, uint16_t port);
     void connect();
     void send_vectors(const std::vector<Vector>& vectors);
     void close();
 
 private:
     std::string ip;
-    uint64_t port;
+    uint16_t port;
     int sock;
 };
 
