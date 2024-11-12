@@ -1,9 +1,9 @@
-// Authenticator.h
 #ifndef AUTHENTICATOR_H
 #define AUTHENTICATOR_H
 
 #include <string>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
