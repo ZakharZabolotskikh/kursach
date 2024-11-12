@@ -12,6 +12,7 @@ public:
     void connect();
     void send_vectors(const std::vector<Vector>& vectors);
     void close();
+    int get_socket() const { return sock; }
 
 private:
     std::string ip;

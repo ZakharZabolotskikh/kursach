@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept>
+#include <fstream>
 #include "FileManager.h"
 #include "Authenticator.h"
 #include "ServerConnection.h"
@@ -33,7 +34,7 @@ int main(int argc, char* argv[]) {
 
     Authenticator authenticator(login, password);
     try {
-        authenticator.authenticate(server_connection.sock);
+        authenticator.authenticate(server_connection.get_socket());
         server_connection.send_vectors(vectors);
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

@@ -1,6 +1,7 @@
 #include "Authenticator.h"
 #include <cstring>
 #include <unistd.h>
+#include <sys/socket.h>
 
 void Authenticator::authenticate(int socket) {
     std::string salt16 = compute_salt();

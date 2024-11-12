@@ -15,7 +15,7 @@ public:
         : login(login), password(password) {}
 
     std::string compute_salt() {
-        uint64_t salt = rand() % (1ULL << 64);
+        uint64_t salt = (static_cast<uint64_t>(rand()) << 32) | rand();
         std::ostringstream oss;
         oss << std::setw(16) << std::setfill('0') << std::hex << salt;
         return oss.str();
