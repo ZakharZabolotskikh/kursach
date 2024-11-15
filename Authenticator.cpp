@@ -5,7 +5,7 @@
 
 void Authenticator::authenticate(int socket) {
     std::string salt16 = compute_salt();
-    std::string hash_sha256 = generate_hash(salt16, password);
+    std::string hash_sha256 = generate_hash(salt16);
 
     std::string msg = login + salt16 + hash_sha256;
     send(socket, msg.c_str(), msg.length(), 0);
