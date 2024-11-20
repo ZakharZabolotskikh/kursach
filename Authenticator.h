@@ -3,39 +3,23 @@
 
 #include <string>
 #include <openssl/sha.h>
-#include <openssl/evp.h>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <cstdlib>
+#include <stdexcept>
+#include <sys/socket.h>
 
 class Authenticator {
 public:
-    Authenticator(const std::string& login, const std::string& password)
-        : login(login), password(password) {}
-
-    std::string compute_salt() {
-        uint64_t salt = (static_cast<uint64_t>(rand()) << 32) | rand();
-        std::ostringstream oss;
-        oss << std::setw(16) << std::setfill('0') << std::hex << salt;
-        return oss.str();
-    }
-
-    std::string generate_hash(const std::string& salt16) {
-        std::string combined = salt16 + password;
-        unsigned char digest[SHA256_DIGEST_LENGTH];
-        SHA256(reinterpret_cast<const unsigned char*>(combined.c_str()), combined.length(), digest);
-        
-        std::ostringstream oss;
-        for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
-            oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(digest[i]);
-        }
-        return oss.str();
-    }
+    Authenticator(const std::string& login, const std::string& password);
 
     void authenticate(int socket);
 
 private:
+    std::string compute_salt();
+    std::string generate_hash(const std::string& salt16);
+
     std::string login;
     std::string password;
 };
