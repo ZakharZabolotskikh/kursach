@@ -1,0 +1,120 @@
+#include <gtest/gtest.h>
+#include <fstream>
+#include "Authenticator.h"
+#include "FileManager.h"
+#include "ServerConnection.h"
+#include "Vector.h"
+
+
+// Authenticator Tests
+TEST(AuthenticatorTest, SaltLength) {
+    Authenticator auth("user", "password");
+    std::string salt = auth.compute_salt();
+    EXPECT_EQ(salt.length(), 16);  // Ожидаемая длина соли в 16 символов
+}
+
+TEST(AuthenticatorTest, HashConsistentLength) {
+    Authenticator auth("user", "password");
+    std::string salt = auth.compute_salt();
+    std::string hash = auth.generate_hash(salt);
+    EXPECT_EQ(hash.length(), 64);  // Длина хеша SHA-256 в шестнадцатеричной записи
+}
+
+TEST(AuthenticatorTest, DifferentSaltsProduceDifferentHashes) {
+    Authenticator auth("user", "password");
+    std::string salt1 = auth.compute_salt();
+    std::string salt2 = auth.compute_salt();
+    std::string hash1 = auth.generate_hash(salt1);
+    std::string hash2 = auth.generate_hash(salt2);
+    EXPECT_NE(hash1, hash2);  // Разные соли должны давать разные хеши
+}
+
+// FileManager Tests
+TEST(FileManagerTest, WriteReadVectors) {
+    std::string temp_filename = "vectors.bin";
+    std::vector<Vector> vectors_out = {Vector(2, {1, 2}), Vector(3, {4, 5, 6})};
+    FileManager::write_results(temp_filename, {1, 2, 3});
+    std::vector<uint64_t> results = FileManager::read_vectors(temp_filename);
+    EXPECT_EQ(results.size(), 3);
+    EXPECT_EQ(results[0], 1);
+    EXPECT_EQ(results[1], 2);
+    EXPECT_EQ(results[2], 3);
+    std::remove(temp_filename.c_str());
+}
+
+TEST(FileManagerTest, HandleEmptyVectors) {
+    std::string temp_filename = "empty_vectors.bin";
+    std::vector<Vector> empty_vectors;
+    FileManager::write_results(temp_filename, {});
+    std::vector<uint64_t> results = FileManager::read_vectors(temp_filename);
+    EXPECT_TRUE(results.empty());
+    std::remove(temp_filename.c_str());
+}
+
+TEST(FileManagerTest, ReadWriteLargeVectors) {
+    std::string temp_filename = "large_vectors.bin";
+    std::vector<Vector> vectors_out = {Vector(1000, std::vector<uint64_t>(1000, 42))};
+    FileManager::write_results(temp_filename, std::vector<uint64_t>(1000, 42));
+    std::vector<uint64_t> results = FileManager::read_vectors(temp_filename);
+    EXPECT_EQ(results.size(), 1000);
+    for (auto value : results) {
+        EXPECT_EQ(value, 42);
+    }
+    std::remove(temp_filename.c_str());
+}
+
+// ServerConnection Tests
+TEST(ServerConnectionTest, Initialization) {
+    ServerConnection server("127.0.0.1", 8080);
+    EXPECT_NO_THROW(server.connect());
+    server.close();
+}
+
+TEST(ServerConnectionTest, SendVectorsEmpty) {
+    ServerConnection server("127.0.0.1", 8080);
+    server.connect();
+    std::vector<Vector> empty_vectors;
+    EXPECT_NO_THROW(server.send_vectors(empty_vectors));
+    server.close();
+}
+
+TEST(ServerConnectionTest, GracefulClose) {
+    ServerConnection server("127.0.0.1", 8080);
+    server.connect();
+    EXPECT_NO_THROW(server.close());
+}
+
+// Vector Tests
+TEST(VectorTest, VectorInitialization) {
+    std::vector<uint64_t> values = {10, 20, 30};
+    Vector vec(3, values);
+    EXPECT_EQ(vec.size, 3);
+    EXPECT_EQ(vec.values, values);
+}
+
+TEST(VectorTest, EmptyVector) {
+    Vector vec(0, {});
+    EXPECT_EQ(vec.size, 0);
+    EXPECT_TRUE(vec.values.empty());
+}
+
+// Exception Handling
+TEST(FileManagerTest, ExceptionForInvalidFile) {
+    EXPECT_THROW(FileManager::read_vectors("nonexistent_file.bin"), std::runtime_error);
+}
+
+TEST(ServerConnectionTest, ExceptionForInvalidIP) {
+    ServerConnection server("256.256.256.256", 8080);
+    EXPECT_THROW(server.connect(), std::runtime_error);
+}
+
+TEST(AuthenticatorTest, EmptyCredentials) {
+    Authenticator auth("", "");
+    EXPECT_THROW(auth.authenticate(0), std::runtime_error); // Мокирование на сервере требуется
+}
+
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
