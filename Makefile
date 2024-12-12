@@ -1,54 +1,26 @@
-CXX = g++
-CXXFLAGS = -Wall -Werror -std=c++11
-LDFLAGS = -lgtest -lgtest_main -pthread -lopenssl
-SRC_DIR = src
-BUILD_DIR = build
-BIN_DIR = bin
-TEST_DIR = tests
+CXX=g++
+CXXFLAGS=-std=c++11 -Wall -Wextra -I/usr/include -L/usr/lib
+LDLIBS=-lssl -lcryptopp -lboost_program_options
 
-# Source files
-SOURCES = $(wildcard $(SRC_DIR)/*.cpp) \
-          $(wildcard $(SRC_DIR)/*/*.cpp)
+TARGET=client
+OBJS=Authenticator.o Client.o FileManager.o ServerConnection.o
 
-OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
+all: $(TARGET)
 
-# Test source files
-TEST_SOURCES = $(wildcard $(TEST_DIR)/*.cpp)
-TEST_OBJECTS = $(patsubst $(TEST_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(TEST_SOURCES))
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LDLIBS)
 
-# Executables
-EXECUTABLE = $(BIN_DIR)/client
-TEST_EXECUTABLE = $(BIN_DIR)/run_tests
+Authenticator.o: Authenticator.cpp Authenticator.h
+	$(CXX) $(CXXFLAGS) -c Authenticator.cpp
 
-.PHONY: all clean test
+Client.o: Client.cpp Authenticator.h FileManager.h ServerConnection.h
+	$(CXX) $(CXXFLAGS) -c Client.cpp
 
-# Default rule
-all: $(EXECUTABLE)
+FileManager.o: FileManager.cpp FileManager.h Vector.h
+	$(CXX) $(CXXFLAGS) -c FileManager.cpp
 
-# Build the executable
-$(EXECUTABLE): $(OBJECTS)
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
+ServerConnection.o: ServerConnection.cpp ServerConnection.h Vector.h
+	$(CXX) $(CXXFLAGS) -c ServerConnection.cpp
 
-# Build test runner
-$(TEST_EXECUTABLE): $(TEST_OBJECTS) $(OBJECTS)
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $(TEST_OBJECTS) $(OBJECTS) -o $@ $(LDFLAGS)
-
-# Compile object files
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Compile test object files
-$(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
-	@mkdir -p $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Run tests
-test: $(TEST_EXECUTABLE)
-	$(TEST_EXECUTABLE)
-
-# Clean up
 clean:
-	rm -rf $(BUILD_DIR)/*.o $(EXECUTABLE) $(TEST_EXECUTABLE) $(BIN_DIR)
+	rm -f $(TARGET) $(OBJS)

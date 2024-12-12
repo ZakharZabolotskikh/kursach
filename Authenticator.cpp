@@ -11,24 +11,29 @@ std::string Authenticator::compute_salt() {
 }
 
 std::string Authenticator::generate_hash(const std::string& salt16) {
-    std::string combined = salt16 + password;
-    unsigned char digest[SHA256_DIGEST_LENGTH];
-    SHA256(reinterpret_cast<const unsigned char*>(combined.c_str()), combined.length(), digest);
-    
-    std::ostringstream oss;
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
-        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(digest[i]);
-    }
-    return oss.str();
-}
+    namespace CPP = CryptoPP;
+    std::string HashAndPass = salt16 + password;
 
+    // Удаляем пробелы и символы переноса строки
+    HashAndPass.erase(remove_if(HashAndPass.begin(), HashAndPass.end(), [](unsigned char x) { 
+        return std::isspace(x); 
+    }), HashAndPass.end());
+
+    CPP::SHA256 hash;
+    CPP::byte digest[CryptoPP::SHA256::DIGESTSIZE];
+    hash.CalculateDigest(digest, (const CPP::byte*)HashAndPass.data(), HashAndPass.size());
+    std::string Hash;
+    CryptoPP::StringSource(digest, sizeof(digest), true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(Hash)));
+    std::cout << HashAndPass << "#" << std::endl;
+    return Hash;
+}
 void Authenticator::authenticate(int socket) {
     std::string salt16 = compute_salt();
     std::string hash_sha256 = generate_hash(salt16);
 
     std::string msg = login + salt16 + hash_sha256;
     send(socket, msg.c_str(), msg.length(), 0);
-
+std::cout<<msg<<"#"<<std::endl;
     char response[8];
     recv(socket, response, sizeof(response), 0);
     if (std::string(response) != "OK") {
