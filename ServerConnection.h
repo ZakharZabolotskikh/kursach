@@ -1,3 +1,10 @@
+/** @file
+* @author Заболотских З.В.
+* @version 1.0
+* @date 15.12.2024
+* @copyright ИБСТ ПГУ
+* @warning Это учебный пример
+*/
 #ifndef SERVER_CONNECTION_H
 #define SERVER_CONNECTION_H
 
