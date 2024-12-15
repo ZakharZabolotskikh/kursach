@@ -11,13 +11,22 @@
 #include <cstdint>
 #include <vector>
 
+/**
+ * @class Vector
+ * @brief Represents a mathematical vector with a specified size and values.
+ */
 class Vector {
 public:
+    /**
+     * @brief Constructs a Vector with given size and values.
+     * @param size The number of elements in the vector.
+     * @param values The values stored in the vector.
+     */
     Vector(uint32_t size, const std::vector<uint64_t>& values)
         : size(size), values(values) {}
 
-    uint32_t size;
-    std::vector<uint64_t> values;
+    uint32_t size;              ///< The number of elements in the vector.
+    std::vector<uint64_t> values; ///< The values of the vector elements.
 };
 
 #endif // VECTOR_H
