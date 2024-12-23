@@ -23,40 +23,50 @@ namespace CPP = CryptoPP;
 
 /**
  * @class Authenticator
- * @brief A class responsible for handling user authentication.
+ * @brief A class to handle user authentication using password hashing and salting.
  */
 class Authenticator {
 public:
     /**
-     * @brief Constructs an Authenticator object with provided login and password.
-     * @param login The user's login.
+     * @brief Constructs an Authenticator object with the specified login and password.
+     * 
+     * @param login The user's login/username.
      * @param password The user's password.
      */
     Authenticator(const std::string& login, const std::string& password);
-
+    
     /**
-     * @brief Performs authentication using a socket.
-     * @param socket The socket descriptor used for communication.
-     * @throws std::runtime_error if authentication fails.
+     * @brief Performs the authentication process over a given socket.
+     * 
+     * @param socket The socket descriptor through which the authentication data will be transmitted.
+     * @throws std::runtime_error If the authentication process fails.
      */
     void authenticate(int socket);
 
 private:
     /**
-     * @brief Computes a random salt.
-     * @return A 16-byte random string used as a salt.
+     * @brief Computes a random salt value.
+     * 
+     * @return A hexadecimal representation of the salt.
      */
     std::string compute_salt();
 
     /**
-     * @brief Generates a hash using the provided salt.
-     * @param salt16 A 16-byte salt used in hash generation.
-     * @return A hash of the password concatenated with the salt.
+     * @brief Generates a hashed value of the password combined with the given salt.
+     * 
+     * @param salt16 A 16-character hexadecimal salt value.
+     * @return A hexadecimal representation of the resultant hash.
      */
     std::string generate_hash(const std::string& salt16);
 
-    std::string login;   ///< The user's login.
-    std::string password;///< The user's password.
+    std::string login;    ///< The user's login/username.
+    std::string password; ///< The user's password.
+
+    friend class TestAuthenticator; ///< Allows TestAuthenticator to access private methods for testing.
 };
 
 #endif // AUTHENTICATOR_H
+
+
+
+ 
