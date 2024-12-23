@@ -1,26 +1,34 @@
-CXX=g++
-CXXFLAGS=-std=c++11 -Wall -Wextra -I/usr/include -L/usr/lib
-LDLIBS=-lssl -lcryptopp -lboost_program_options
+.PHONY: all clean format doxy test
 
-TARGET=client
-OBJS=Authenticator.o Client.o FileManager.o ServerConnection.o
+CXX = g++
+CXXFLAGS = -O2 -Wall -DNDEBUG -std=c++17
+LDFLAGS = -lcryptopp -lboost_program_options -lUnitTest++ -pthread
+
+TARGET = client
+SOURCES = Client.cpp Authenticator.cpp FileManager.cpp ServerConnection.cpp
+OBJECTS = $(SOURCES:.cpp=.o)
+
+TEST_SOURCES = Authenticator.cpp FileManager.cpp ServerConnection.cpp test.cpp
+TEST_OBJECTS = $(TEST_SOURCES:.cpp=.o)
+TEST_TARGET = test
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LDLIBS)
+$(TARGET): $(OBJECTS)
+	$(CXX) $(OBJECTS) $(LDFLAGS) -o $(TARGET)
 
-Authenticator.o: Authenticator.cpp Authenticator.h
-	$(CXX) $(CXXFLAGS) -c Authenticator.cpp
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-Client.o: Client.cpp Authenticator.h FileManager.h ServerConnection.h
-	$(CXX) $(CXXFLAGS) -c Client.cpp
+test: $(TEST_OBJECTS)
+	$(CXX) $(TEST_OBJECTS) $(LDFLAGS) -o $(TEST_TARGET)
+	./$(TEST_TARGET)
 
-FileManager.o: FileManager.cpp FileManager.h Vector.h
-	$(CXX) $(CXXFLAGS) -c FileManager.cpp
+format:
+	astyle *.cpp *.h
 
-ServerConnection.o: ServerConnection.cpp ServerConnection.h Vector.h
-	$(CXX) $(CXXFLAGS) -c ServerConnection.cpp
+doxy:
+	doxygen
 
 clean:
-	rm -f $(TARGET) $(OBJS)
+	rm -f $(TARGET) $(TEST_TARGET) *.o
